@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AdsTracker — XANH FARM</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Be+Vietnam+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0a0c0f;--bg2:#111418;--bg3:#171b21;
+    --border:#1e2530;--border2:#2a3342;
+    --text:#e8edf4;--text2:#7a8899;--text3:#4a5568;
+    --green:#00e5a0;--green-dim:rgba(0,229,160,0.12);
+    --blue:#3b9eff;--blue-dim:rgba(59,158,255,0.12);
+    --amber:#f5a623;--amber-dim:rgba(245,166,35,0.12);
+    --red:#ff4d4f;--red-dim:rgba(255,77,79,0.1);
+    --purple:#a78bfa;
+    --mono:'IBM Plex Mono',monospace;
+    --sans:'Be Vietnam Pro',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(59,158,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(59,158,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+  .wrap{position:relative;z-index:1;max-width:1500px;margin:0 auto;padding:0 20px 60px;}
+
+  header{display:flex;align-items:center;justify-content:space-between;padding:18px 0 22px;border-bottom:1px solid var(--border);margin-bottom:24px;flex-wrap:wrap;gap:10px;}
+  .logo{display:flex;align-items:center;gap:10px;}
+  .logo-dot{width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.3)}}
+  .logo-text{font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:0.05em;}
+  .logo-sub{font-size:11px;color:var(--text3);font-family:var(--mono);}
+  .hdr-r{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .badge{font-family:var(--mono);font-size:11px;padding:3px 9px;border-radius:4px;display:flex;align-items:center;gap:5px;}
+  .bg{color:var(--green);background:var(--green-dim);border:1px solid rgba(0,229,160,0.2);}
+  .ba{color:var(--amber);background:var(--amber-dim);border:1px solid rgba(245,166,35,0.2);}
+  .br{color:var(--red);background:var(--red-dim);border:1px solid rgba(255,77,79,0.2);}
+  #last-refresh{font-size:11px;color:var(--text3);font-family:var(--mono);}
+
+  /* CONFIG */
+  .cfg{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px;}
+  .cfg-lbl{font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:14px;}
+  .cfg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px;}
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-size:10px;color:var(--text2);font-family:var(--mono);letter-spacing:0.05em;}
+  .field input,.field select{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:8px 11px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;transition:border-color .15s;}
+  .field input:focus,.field select:focus{border-color:var(--blue);}
+  .field input::placeholder{color:var(--text3);}
+  .field .hint{font-size:10px;color:var(--text3);margin-top:3px;}
+
+  /* ACCOUNT CHECKBOXES */
+  .acct-section{margin-bottom:14px;}
+  .acct-lbl{font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+  .acct-checks{display:flex;gap:8px;flex-wrap:wrap;}
+  .acct-chk{position:relative;}
+  .acct-chk input{position:absolute;opacity:0;width:0;height:0;}
+  .acct-chk label{display:flex;align-items:center;gap:8px;padding:7px 13px;border-radius:6px;border:1px solid var(--border2);background:var(--bg3);font-family:var(--mono);font-size:12px;color:var(--text2);cursor:pointer;transition:all .15s;user-select:none;}
+  .acct-chk label:hover{border-color:var(--border);color:var(--text);}
+  .acct-chk.c0 input:checked+label{color:var(--blue);background:var(--blue-dim);border-color:rgba(59,158,255,0.4);}
+  .acct-chk.c1 input:checked+label{color:var(--green);background:var(--green-dim);border-color:rgba(0,229,160,0.4);}
+  .acct-chk.c2 input:checked+label{color:var(--purple);background:rgba(167,139,250,0.12);border-color:rgba(167,139,250,0.4);}
+  .acct-chk.c3 input:checked+label{color:var(--amber);background:var(--amber-dim);border-color:rgba(245,166,35,0.4);}
+  .acct-chk .dot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.6;}
+  .acct-chk input:checked+label .dot{opacity:1;}
+  .acct-st{font-size:10px;font-family:var(--mono);margin-left:2px;}
+  .sel-all{font-size:11px;font-family:var(--mono);color:var(--text3);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0;}
+  .sel-all:hover{color:var(--blue);}
+
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .btn{padding:8px 18px;border-radius:6px;font-family:var(--mono);font-size:12px;font-weight:500;cursor:pointer;border:none;transition:all .15s;display:flex;align-items:center;gap:6px;}
+  .btn-p{background:var(--blue);color:#fff;}
+  .btn-p:hover{background:#5aafff;}
+  .btn-p:disabled{opacity:.4;cursor:not-allowed;}
+  .btn-o{background:transparent;border:1px solid var(--border2);color:var(--text2);}
+  .btn-o:hover{border-color:var(--blue);color:var(--blue);}
+  .tog{font-size:11px;color:var(--text3);font-family:var(--mono);cursor:pointer;background:none;border:none;padding:0;text-decoration:underline;}
+
+  .err-box{background:var(--red-dim);border:1px solid rgba(255,77,79,0.25);border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:12px;color:var(--red);margin-bottom:14px;display:none;line-height:1.8;}
+  .inf-box{background:var(--blue-dim);border:1px solid rgba(59,158,255,0.2);border-radius:8px;padding:8px 14px;font-size:12px;color:var(--blue);font-family:var(--mono);margin-bottom:14px;display:none;line-height:1.8;}
+
+  /* KPI */
+  .kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:20px;}
+  .kpi{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:15px 17px;position:relative;overflow:hidden;}
+  .kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+  .kpi.kb::before{background:linear-gradient(90deg,var(--blue),transparent);}
+  .kpi.kg::before{background:linear-gradient(90deg,var(--green),transparent);}
+  .kpi.ka::before{background:linear-gradient(90deg,var(--amber),transparent);}
+  .kpi.kp::before{background:linear-gradient(90deg,var(--purple),transparent);}
+  .kpi.kr::before{background:linear-gradient(90deg,var(--red),transparent);}
+  .kpi-l{font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;}
+  .kpi-v{font-size:20px;font-family:var(--mono);font-weight:600;line-height:1.1;}
+  .kb .kpi-v{color:var(--blue);}.kg .kpi-v{color:var(--green);}.ka .kpi-v{color:var(--amber);}.kp .kpi-v{color:var(--purple);}.kr .kpi-v{color:var(--red);}
+  .kpi-s{font-size:11px;color:var(--text3);margin-top:3px;}
+
+  /* FILTER */
+  .fil{display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+  .fil input{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:6px 11px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;width:180px;}
+  .fil input:focus{border-color:var(--blue);}
+  .fil select{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:6px 11px;color:var(--text2);font-family:var(--mono);font-size:12px;outline:none;}
+  .fbtn{font-size:11px;font-family:var(--mono);padding:5px 10px;border-radius:4px;border:1px solid var(--border);background:none;color:var(--text3);cursor:pointer;transition:all .12s;}
+  .fbtn.active{border-color:var(--blue);color:var(--blue);background:var(--blue-dim);}
+  .cnt{font-size:11px;color:var(--text3);font-family:var(--mono);margin-left:auto;}
+
+  /* TABLE */
+  .tbl-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  table{width:100%;border-collapse:collapse;}
+  thead th{font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:0.08em;text-transform:uppercase;padding:10px 12px;text-align:right;border-bottom:1px solid var(--border);background:var(--bg3);white-space:nowrap;cursor:pointer;user-select:none;}
+  thead th:first-child,thead th:nth-child(2){text-align:left;}
+  thead th:hover{color:var(--blue);}
+  tbody tr{border-bottom:1px solid var(--border);transition:background .1s;}
+  tbody tr:last-child{border-bottom:none;}
+  tbody tr:hover{background:rgba(59,158,255,0.04);}
+  tbody td{padding:10px 12px;font-family:var(--mono);font-size:12px;color:var(--text2);text-align:right;white-space:nowrap;}
+  tbody td:first-child,tbody td:nth-child(2){text-align:left;}
+  .aid{font-size:10px;color:var(--text3);background:var(--bg3);border:1px solid var(--border);border-radius:3px;padding:2px 6px;display:inline-block;max-width:140px;overflow:hidden;text-overflow:ellipsis;}
+  .atag{font-size:10px;padding:1px 6px;border-radius:3px;font-weight:500;}
+  .a0{background:rgba(59,158,255,0.12);color:#3b9eff;}
+  .a1{background:rgba(0,229,160,0.12);color:#00e5a0;}
+  .a2{background:rgba(167,139,250,0.12);color:#a78bfa;}
+  .a3{background:rgba(245,166,35,0.12);color:#f5a623;}
+  .cp{color:var(--green);}.cw{color:var(--amber);}.cn{color:var(--text);}
+  .rp{display:inline-block;padding:2px 7px;border-radius:3px;font-size:11px;font-weight:500;}
+  .rh{background:var(--green-dim);color:var(--green);}
+  .rm{background:var(--amber-dim);color:var(--amber);}
+  .rl{background:var(--red-dim);color:var(--red);}
+  .tbl-ft{font-size:11px;color:var(--text3);font-family:var(--mono);padding:10px 14px;border-top:1px solid var(--border);background:var(--bg3);}
+  .stmsg{padding:50px 20px;text-align:center;font-family:var(--mono);color:var(--text3);font-size:13px;line-height:2;}
+  .spin{display:inline-block;width:11px;height:11px;border:2px solid rgba(59,158,255,0.3);border-top-color:var(--blue);border-radius:50%;animation:sp .7s linear infinite;}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  @media(max-width:700px){.kpi-row{grid-template-columns:repeat(2,1fr);}header{flex-direction:column;}.tbl-wrap{overflow-x:auto;}.acct-checks{flex-direction:column;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">
+      <div class="logo-dot"></div>
+      <div>
+        <div class="logo-text">ADS_TRACKER — XANH FARM</div>
+        <div class="logo-sub">Google Sheets (Pancake) × Facebook Ads — realtime</div>
+      </div>
+    </div>
+    <div class="hdr-r">
+      <span id="status" style="display:none" class="badge"></span>
+      <span id="last-refresh"></span>
+      <button class="btn btn-o" id="btn-ref" onclick="loadAll()" style="display:none">↺ Refresh</button>
+    </div>
+  </header>
+
+  <div class="cfg" id="cfg">
+    <div class="cfg-lbl">// Cấu hình</div>
+
+    <!-- Account checkboxes -->
+    <div class="acct-section">
+      <div class="acct-lbl">Tài khoản Facebook Ads <button class="sel-all" onclick="toggleAll()">Chọn tất cả</button></div>
+      <div class="acct-checks">
+        <div class="acct-chk c0"><input type="checkbox" id="chk-0" checked onchange="updBtn()"><label for="chk-0"><span class="dot"></span>Xanh Na-pure 01<span class="acct-st" id="st-0"></span></label></div>
+        <div class="acct-chk c1"><input type="checkbox" id="chk-1" checked onchange="updBtn()"><label for="chk-1"><span class="dot"></span>Xanh Farm - Thiện 02<span class="acct-st" id="st-1"></span></label></div>
+        <div class="acct-chk c2"><input type="checkbox" id="chk-2" checked onchange="updBtn()"><label for="chk-2"><span class="dot"></span>Xanh Farm - Thiện 03<span class="acct-st" id="st-2"></span></label></div>
+        <div class="acct-chk c3"><input type="checkbox" id="chk-3" checked onchange="updBtn()"><label for="chk-3"><span class="dot"></span>Xanh Farm - Thiện 01<span class="acct-st" id="st-3"></span></label></div>
+      </div>
+    </div>
+
+    <div class="cfg-grid">
+      <div class="field">
+        <label>FB_ACCESS_TOKEN</label>
+        <input type="password" id="fb-token" value="EAATdCS28GLIBRDUbrKOnXSqvZBiuxdqECMjJNj7zwoYFeHIRyI3IcCx33DQF6JK5vBtERCRqZCXX1O7QiZBtn9MWIEZAA6V7EylEL65uRyscozguLLJxfKQgWwIyNBmqZCzkI5cPDUJMTl5FTOQTU4e9g1kTz30vZBxGENZCRSCZCGS6MgNkI9OlbEkvUa1SeJQBxOSnLfHHVXKTrZCKOwFIDOrvKZAznsAIICUXpxYGYBZAsyeTeuAeM8QhBsRAKuKJ4EqHG4GZAXcsZCEWEPGKbs2Ai">
+      </div>
+      <div class="field">
+        <label>GOOGLE_SHEET_ID</label>
+        <input type="text" id="sheet-id" value="1oZku10N7r2AB30h7g7LRBIekr6fNMHdefChtrdaWIQs">
+        <span class="hint">Lấy từ URL spreadsheet (đoạn dài giữa /d/ và /edit)</span>
+      </div>
+      <div class="field">
+        <label>SHEET_NAME (tên tab)</label>
+        <input type="text" id="sheet-name" value="PosSheets(Test 4)">
+        <span class="hint">Tên tab ở dưới cùng Google Sheets</span>
+      </div>
+      <div class="field">
+        <label>KHOẢNG THỜI GIAN</label>
+        <select id="date-range">
+          <option value="today">Hôm nay</option>
+          <option value="yesterday">Hôm qua</option>
+          <option value="last_7d" selected>7 ngày qua</option>
+          <option value="last_30d">30 ngày qua</option>
+          <option value="this_month">Tháng này</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>AUTO REFRESH</label>
+        <select id="auto-int">
+          <option value="0">Tắt</option>
+          <option value="300" selected>5 phút</option>
+          <option value="600">10 phút</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-p" id="btn-load" onclick="loadAll()">▶ Tải dữ liệu</button>
+      <button class="tog" onclick="togCfg()">Thu gọn ↑</button>
+    </div>
+  </div>
+
+  <div class="err-box" id="err"></div>
+  <div class="inf-box" id="inf"></div>
+
+  <div class="kpi-row" id="kpi-row" style="display:none">
+    <div class="kpi kb"><div class="kpi-l">Tổng chi phí FB</div><div class="kpi-v" id="k-spend">—</div><div class="kpi-s" id="k-spend-s"></div></div>
+    <div class="kpi kg"><div class="kpi-l">Doanh thu Pancake</div><div class="kpi-v" id="k-rev">—</div><div class="kpi-s" id="k-rev-s"></div></div>
+    <div class="kpi ka"><div class="kpi-l">ROAS thực tế</div><div class="kpi-v" id="k-roas">—</div><div class="kpi-s">doanh thu ÷ chi phí</div></div>
+    <div class="kpi kp"><div class="kpi-l">Tổng đơn hàng</div><div class="kpi-v" id="k-orders">—</div><div class="kpi-s" id="k-orders-s"></div></div>
+    <div class="kpi kr"><div class="kpi-l">Chi phí / đơn</div><div class="kpi-v" id="k-cpp">—</div><div class="kpi-s">cost per purchase</div></div>
+  </div>
+
+  <div class="fil" id="fil" style="display:none">
+    <input type="text" id="search" placeholder="Tìm Ad ID..." oninput="renderTable()">
+    <select id="acct-f" onchange="renderTable()">
+      <option value="all">Tất cả TK</option>
+      <option value="0">Na-pure 01</option>
+      <option value="1">Thiện 02</option>
+      <option value="2">Thiện 03</option>
+      <option value="3">Thiện 01</option>
+    </select>
+    <select id="roas-f" onchange="renderTable()">
+      <option value="all">Tất cả ROAS</option>
+      <option value="high">≥ 3x</option>
+      <option value="mid">1–3x</option>
+      <option value="low">< 1x</option>
+    </select>
+    <button class="fbtn" id="s-spend" onclick="sortBy('spend')">Chi phí</button>
+    <button class="fbtn" id="s-roas" onclick="sortBy('roas')">ROAS</button>
+    <button class="fbtn" id="s-orders" onclick="sortBy('orders')">Đơn</button>
+    <button class="fbtn" id="s-revenue" onclick="sortBy('revenue')">Doanh thu</button>
+    <span class="cnt" id="cnt"></span>
+  </div>
+
+  <div class="tbl-wrap" id="tbl-wrap" style="display:none">
+    <table>
+      <thead><tr>
+        <th>Ad ID</th>
+        <th>Tài khoản</th>
+        <th onclick="sortBy('spend')">Chi phí (₫)</th>
+        <th onclick="sortBy('impressions')">Hiển thị</th>
+        <th onclick="sortBy('clicks')">Clicks</th>
+        <th onclick="sortBy('orders')">Đơn Pancake</th>
+        <th onclick="sortBy('revenue')">Doanh thu (₫)</th>
+        <th onclick="sortBy('roas')">ROAS thực</th>
+        <th onclick="sortBy('cpp')">CP/Đơn (₫)</th>
+        <th onclick="sortBy('cvr')">CVR</th>
+      </tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="tbl-ft" id="tbl-ft"></div>
+  </div>
+</div>
+
+<script>
+const ACCOUNTS=[
+  {id:'act_1109511134707385',name:'Xanh Na-pure 01',short:'Na-pure 01',idx:0},
+  {id:'act_2067620600692351',name:'Xanh Farm - Thiện 02',short:'Thiện 02',idx:1},
+  {id:'act_770039865628190', name:'Xanh Farm - Thiện 03',short:'Thiện 03',idx:2},
+  {id:'act_859790483538788', name:'Xanh Farm - Thiện 01',short:'Thiện 01',idx:3},
+];
+
+let rows=[],sortKey='spend',sortDir=-1,timer=null,cfgOpen=true;
+
+const fV=n=>n==null?'—':new Intl.NumberFormat('vi-VN').format(Math.round(n))+'₫';
+const fK=n=>{if(n==null)return'—';if(n>=1e9)return(n/1e9).toFixed(1)+'B';if(n>=1e6)return(n/1e6).toFixed(1)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return String(n);};
+const fP=n=>n==null?'—':(n*100).toFixed(1)+'%';
+const fR=n=>n==null||isNaN(n)?'—':n.toFixed(2)+'x';
+
+function getRange(p){
+  const t=new Date(),fmt=d=>d.toISOString().slice(0,10);
+  const sub=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()-n);return x;};
+  if(p==='today')return{since:fmt(t),until:fmt(t)};
+  if(p==='yesterday')return{since:fmt(sub(t,1)),until:fmt(sub(t,1))};
+  if(p==='last_7d')return{since:fmt(sub(t,7)),until:fmt(t)};
+  if(p==='last_30d')return{since:fmt(sub(t,30)),until:fmt(t)};
+  if(p==='this_month')return{since:fmt(new Date(t.getFullYear(),t.getMonth(),1)),until:fmt(t)};
+  return{since:fmt(sub(t,7)),until:fmt(t)};
+}
+
+function isChk(i){return document.getElementById('chk-'+i)?.checked;}
+function toggleAll(){const all=ACCOUNTS.every((_,i)=>isChk(i));ACCOUNTS.forEach((_,i)=>{document.getElementById('chk-'+i).checked=!all;});updBtn();}
+function updBtn(){const n=ACCOUNTS.filter((_,i)=>isChk(i)).length;document.getElementById('btn-load').textContent=`▶ Tải dữ liệu (${n} TK)`;}
+function setSt(id,cls,txt){const el=document.getElementById('st-'+id);if(el){el.className='acct-st '+cls;el.textContent=txt?' · '+txt:'';}}
+function setStatus(msg,type='ok'){
+  const el=document.getElementById('status');el.style.display='flex';
+  el.className='badge '+(type==='ok'?'bg':type==='loading'?'ba':'br');
+  el.innerHTML=type==='loading'?`<span class="spin"></span> ${msg}`:(type==='error'?`⊗ ${msg}`:`● ${msg}`);
+}
+function showErr(m){document.getElementById('err').style.display='block';document.getElementById('err').innerHTML='⚠ '+m;}
+function clearErr(){document.getElementById('err').style.display='none';}
+function showInf(m){document.getElementById('inf').style.display='block';document.getElementById('inf').innerHTML=m;}
+function clearInf(){document.getElementById('inf').style.display='none';}
+
+// ── GOOGLE SHEETS ──
+async function fetchSheets(sheetId, sheetName, dateRange) {
+  const {since, until} = getRange(dateRange);
+  const sinceD = new Date(since);
+  const untilD = new Date(until); untilD.setHours(23,59,59);
+
+  // Use CSV export — works with public sheets, no API key needed
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error(`Google Sheets: HTTP ${res.status} — Sheet chưa public hoặc tên tab sai`);
+  const csv = await res.text();
+  if(csv.includes('html') || csv.length < 10) throw new Error('Không đọc được Sheet — kiểm tra chia sẻ public và tên tab');
+
+  // Parse CSV
+  const lines = csv.split('\n').filter(l=>l.trim());
+  if(lines.length < 2) return {};
+
+  // Detect columns from header row
+  // Expected: ID, Ngày tạo đơn, Khách hàng, Số điện thoại, Tỉnh/Thành phố, Doanh số, Thời điểm tạo đơn, Trạng thái, Ad Id
+  const header = parseCSVLine(lines[0]).map(h=>h.toLowerCase().trim().replace(/"/g,''));
+  
+  const colId       = header.findIndex(h=>h==='id'||h==='mã đơn'||h==='order id');
+  const colDate     = header.findIndex(h=>h.includes('ngày')||h.includes('date')||h.includes('thời điểm'));
+  const colRevenue  = header.findIndex(h=>h.includes('doanh số')||h.includes('doanh thu')||h.includes('revenue')||h.includes('total'));
+  const colAdId     = header.findIndex(h=>h.includes('ad id')||h.includes('ad_id')||h.includes('adid'));
+  const colStatus   = header.findIndex(h=>h.includes('trạng thái')||h.includes('status'));
+
+  if(colAdId === -1) throw new Error('Không tìm thấy cột Ad Id trong Sheet — kiểm tra tên tab và cấu trúc');
+
+  const adMap = {};
+  for(let i=1;i<lines.length;i++){
+    const cols = parseCSVLine(lines[i]);
+    const adId = cols[colAdId]?.replace(/"/g,'').trim();
+    if(!adId || adId===''||adId==='null') continue;
+
+    // Filter by date if date column exists
+    if(colDate !== -1) {
+      const rawDate = cols[colDate]?.replace(/"/g,'').trim();
+      if(rawDate) {
+        // Parse date dd/mm/yyyy or yyyy-mm-dd
+        let d;
+        if(rawDate.includes('/')) {
+          const parts = rawDate.split('/');
+          if(parts.length>=3) d = new Date(parts[2], parts[1]-1, parts[0]);
+        } else {
+          d = new Date(rawDate.slice(0,10));
+        }
+        if(d && (d < sinceD || d > untilD)) continue;
+      }
+    }
+
+    // Skip cancelled/returned orders if status column exists
+    if(colStatus !== -1) {
+      const st = cols[colStatus]?.replace(/"/g,'').toLowerCase().trim();
+      if(st && (st.includes('hủy')||st.includes('cancel')||st.includes('trả hàng'))) continue;
+    }
+
+    const revenue = parseFloat((cols[colRevenue]||'0').replace(/"/g,'').replace(/,/g,'').replace(/\./g,'')) || 0;
+    if(!adMap[adId]) adMap[adId]={orders:0,revenue:0};
+    adMap[adId].orders++;
+    adMap[adId].revenue += revenue;
+  }
+  return adMap;
+}
+
+function parseCSVLine(line) {
+  const result=[]; let cur='', inQ=false;
+  for(let i=0;i<line.length;i++){
+    if(line[i]==='"'){inQ=!inQ;}
+    else if(line[i]===','&&!inQ){result.push(cur);cur='';}
+    else{cur+=line[i];}
+  }
+  result.push(cur);
+  return result;
+}
+
+// ── FACEBOOK ADS ──
+async function fetchOneFB(token, acct, range){
+  const{since,until}=getRange(range);
+  const fields=`id,insights.time_range({"since":"${since}","until":"${until}"}){ad_id,spend,impressions,clicks,actions}`;
+  const url=`https://graph.facebook.com/v19.0/${acct.id}/ads?fields=${encodeURIComponent(fields)}&limit=200&access_token=${token}`;
+  const res=await fetch(url);
+  const data=await res.json();
+  if(data.error)throw new Error(data.error.message);
+  const result={};
+  const proc=ads=>ads.forEach(ad=>{
+    const ins=ad.insights?.data?.[0];if(!ins)return;
+    const pur=(ins.actions||[]).find(a=>a.action_type==='purchase');
+    result[ad.id]={adId:ad.id,acctIdx:acct.idx,acctName:acct.short,
+      spend:parseFloat(ins.spend||0),impressions:parseInt(ins.impressions||0),
+      clicks:parseInt(ins.clicks||0),fbPurchases:pur?parseInt(pur.value):0};
+  });
+  proc(data.data||[]);
+  let next=data.paging?.next,p=0;
+  while(next&&p<10){const r2=await fetch(next);const d2=await r2.json();proc(d2.data||[]);next=d2.paging?.next;p++;}
+  return result;
+}
+
+// ── MAIN LOAD ──
+async function loadAll(){
+  const token=document.getElementById('fb-token').value.trim();
+  const sheetId=document.getElementById('sheet-id').value.trim();
+  const sheetName=document.getElementById('sheet-name').value.trim();
+  const range=document.getElementById('date-range').value;
+  const selected=ACCOUNTS.filter((_,i)=>isChk(i));
+
+  if(!token){showErr('Thiếu FB Access Token');return;}
+  if(!sheetId||!sheetName){showErr('Thiếu Google Sheet ID hoặc tên tab');return;}
+  if(!selected.length){showErr('Chọn ít nhất 1 tài khoản');return;}
+
+  clearErr();clearInf();
+  document.getElementById('btn-ref').style.display='flex';
+  document.getElementById('btn-load').disabled=true;
+  selected.forEach(a=>setSt(a.idx,'','...'));
+  setStatus('Đang tải...','loading');
+
+  const infos=[];
+
+  // Fetch Google Sheets (Pancake data)
+  setStatus('Đang đọc Google Sheets...','loading');
+  let pkMap={};
+  try{
+    pkMap=await fetchSheets(sheetId,sheetName,range);
+    const total=Object.values(pkMap).reduce((s,r)=>s+r.orders,0);
+    showInf(`✓ Google Sheets: ${Object.keys(pkMap).length} ad IDs, ${total} đơn hàng`);
+  }catch(e){
+    infos.push('⚠ Google Sheets: '+e.message);
+  }
+
+  // Fetch FB Ads (parallel)
+  setStatus('Đang tải Facebook Ads...','loading');
+  const fbResults=await Promise.allSettled(selected.map(a=>fetchOneFB(token,a,range)));
+  const fbAll={};
+  fbResults.forEach((r,i)=>{
+    const acct=selected[i];
+    if(r.status==='fulfilled'){
+      const n=Object.keys(r.value).length;
+      setSt(acct.idx,'',n+' ads');
+      Object.assign(fbAll,r.value);
+    }else{
+      setSt(acct.idx,'','lỗi');
+      infos.push(`⚠ ${acct.name}: ${r.reason?.message}`);
+    }
+  });
+
+  if(infos.length) showInf((document.getElementById('inf').innerHTML||'')+'\n'+infos.join('<br>'));
+
+  // Merge FB + Sheets
+  const allIds=new Set([...Object.keys(fbAll),...Object.keys(pkMap)]);
+  rows=Array.from(allIds).map(id=>{
+    const f=fbAll[id]||{spend:0,impressions:0,clicks:0,fbPurchases:0,acctIdx:-1,acctName:'—'};
+    const p=pkMap[id]||{orders:0,revenue:0};
+    const roas=f.spend>0?p.revenue/f.spend:null;
+    const cpp=p.orders>0?f.spend/p.orders:null;
+    const cvr=f.clicks>0?p.orders/f.clicks:null;
+    return{adId:id,...f,...p,roas,cpp,cvr};
+  });
+
+  document.getElementById('last-refresh').textContent=new Date().toLocaleTimeString('vi-VN');
+  setStatus(`Live · ${Object.keys(fbAll).length} ads · ${Object.values(pkMap).reduce((s,r)=>s+r.orders,0)} đơn`);
+  renderKPI();renderTable();showUI();
+  setupRefresh();
+  document.getElementById('btn-load').disabled=false;
+}
+
+function setupRefresh(){
+  if(timer)clearInterval(timer);
+  const v=parseInt(document.getElementById('auto-int').value);
+  if(v>0)timer=setInterval(loadAll,v*1000);
+}
+
+function renderKPI(){
+  const ts=rows.reduce((s,r)=>s+r.spend,0);
+  const tr=rows.reduce((s,r)=>s+r.revenue,0);
+  const to=rows.reduce((s,r)=>s+r.orders,0);
+  const roas=ts>0?tr/ts:0,cpp=to>0?ts/to:0;
+  document.getElementById('k-spend').textContent=fK(ts)+'₫';
+  document.getElementById('k-spend-s').textContent=rows.length+' ad IDs';
+  document.getElementById('k-rev').textContent=fK(tr)+'₫';
+  document.getElementById('k-rev-s').textContent='từ Google Sheets';
+  document.getElementById('k-roas').textContent=roas.toFixed(2)+'x';
+  document.getElementById('k-orders').textContent=to;
+  document.getElementById('k-orders-s').textContent='đơn hàng';
+  document.getElementById('k-cpp').textContent=fK(cpp)+'₫';
+}
+
+function sortBy(k){
+  if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=-1;}
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  const b=document.getElementById('s-'+k);if(b)b.classList.add('active');
+  renderTable();
+}
+
+function renderTable(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const af=document.getElementById('acct-f').value;
+  const rf=document.getElementById('roas-f').value;
+  let data=rows.filter(r=>{
+    if(q&&!r.adId.includes(q))return false;
+    if(af!=='all'&&r.acctIdx!==parseInt(af))return false;
+    if(rf==='high'&&(r.roas==null||r.roas<3))return false;
+    if(rf==='mid'&&(r.roas==null||r.roas<1||r.roas>=3))return false;
+    if(rf==='low'&&(r.roas==null||r.roas>=1))return false;
+    return true;
+  });
+  data.sort((a,b)=>{const av=a[sortKey]??-Infinity,bv=b[sortKey]??-Infinity;return sortDir*(av<bv?-1:av>bv?1:0);});
+  document.getElementById('cnt').textContent=data.length+' / '+rows.length+' ad IDs';
+  const tbody=document.getElementById('tbody');tbody.innerHTML='';
+  if(!data.length){tbody.innerHTML='<tr><td colspan="10"><div class="stmsg">Không có dữ liệu</div></td></tr>';return;}
+  const tc=['a0','a1','a2','a3'];
+  data.forEach(r=>{
+    const rc=r.roas==null?'':r.roas>=3?'rh':r.roas>=1?'rm':'rl';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><span class="aid" title="${r.adId}">${r.adId}</span></td>
+      <td><span class="atag ${tc[r.acctIdx]||''}">${r.acctName||'—'}</span></td>
+      <td class="cn">${fV(r.spend)}</td>
+      <td>${fK(r.impressions)}</td>
+      <td>${fK(r.clicks)}</td>
+      <td style="color:var(--blue)">${r.orders||0}</td>
+      <td class="${r.revenue>0?'cp':'cw'}">${fV(r.revenue)}</td>
+      <td><span class="rp ${rc}">${fR(r.roas)}</span></td>
+      <td class="${r.cpp&&r.cpp<100000?'cp':'cw'}">${fV(r.cpp)}</td>
+      <td>${fP(r.cvr)}</td>`;
+    tbody.appendChild(tr);
+  });
+  document.getElementById('tbl-ft').textContent=`Cập nhật ${new Date().toLocaleString('vi-VN')} · Chi: ${fV(data.reduce((s,r)=>s+r.spend,0))} · DT: ${fV(data.reduce((s,r)=>s+r.revenue,0))}`;
+}
+
+function showUI(){
+  document.getElementById('kpi-row').style.display='grid';
+  document.getElementById('fil').style.display='flex';
+  document.getElementById('tbl-wrap').style.display='block';
+}
+
+function togCfg(){
+  cfgOpen=!cfgOpen;
+  document.querySelector('.cfg-grid').style.display=cfgOpen?'grid':'none';
+  document.querySelector('.acct-section').style.display=cfgOpen?'block':'none';
+  document.querySelector('.tog').textContent=cfgOpen?'Thu gọn ↑':'Mở rộng ↓';
+}
+
+window.onload=()=>{updBtn();loadAll();};
+</script>
+</body>
+</html>
