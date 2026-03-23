@@ -167,12 +167,12 @@
       </div>
       <div class="field">
         <label>GOOGLE_SHEET_ID</label>
-        <input type="text" id="sheet-id" value="1oZku10N7r2AB30h7g7LRBIekr6fNMHdefChtrdaWIQs">
+        <input type="text" id="sheet-id" value="1fxNkaVzf3Q6ITf-eeesAO0voL7LAYwPjN3cablj5TzY">
         <span class="hint">Lấy từ URL spreadsheet (đoạn dài giữa /d/ và /edit)</span>
       </div>
       <div class="field">
         <label>SHEET_NAME (tên tab)</label>
-        <input type="text" id="sheet-name" value="PosSheets(Test 4)">
+        <input type="text" id="sheet-name" value="PosSheets(Test 5)">
         <span class="hint">Tên tab ở dưới cùng Google Sheets</span>
       </div>
       <div class="field">
@@ -311,12 +311,12 @@ async function fetchSheets(sheetId, sheetName, dateRange) {
   if(lines.length < 2) return {};
 
   // Detect columns from header row
-  // Expected: ID, Ngày tạo đơn, Khách hàng, Số điện thoại, Tỉnh/Thành phố, Doanh số, Thời điểm tạo đơn, Trạng thái, Ad Id
+  // New sheet: ID, Thời điểm, Khách hàng, SĐT, Tỉnh, Trạng thái, Tổng tiền (trừ CK), ..., Ad Id
   const header = parseCSVLine(lines[0]).map(h=>h.toLowerCase().trim().replace(/"/g,''));
   
   const colId       = header.findIndex(h=>h==='id'||h==='mã đơn'||h==='order id');
   const colDate     = header.findIndex(h=>h.includes('ngày')||h.includes('date')||h.includes('thời điểm'));
-  const colRevenue  = header.findIndex(h=>h.includes('doanh số')||h.includes('doanh thu')||h.includes('revenue')||h.includes('total'));
+  const colRevenue  = header.findIndex(h=>h.includes('tổng tiền')||h.includes('chiết khấu')||h.includes('doanh số')||h.includes('doanh thu')||h.includes('revenue')||h.includes('total'));
   const colAdId     = header.findIndex(h=>h.includes('ad id')||h.includes('ad_id')||h.includes('adid'));
   const colStatus   = header.findIndex(h=>h.includes('trạng thái')||h.includes('status'));
 
